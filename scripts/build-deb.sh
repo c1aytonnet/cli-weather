@@ -19,6 +19,8 @@ mkdir -p "${PACKAGE_ROOT}/usr/share/doc/cli-weather"
 
 cp "${ROOT_DIR}/packaging/deb/control" "${PACKAGE_ROOT}/DEBIAN/control"
 cp -R "${ROOT_DIR}/src" "${PACKAGE_ROOT}/opt/cli-weather/src"
+find "${PACKAGE_ROOT}/opt/cli-weather/src" -type d -name '__pycache__' -prune -exec rm -rf {} +
+find "${PACKAGE_ROOT}/opt/cli-weather/src" -type f -name '*.pyc' -delete
 cp "${ROOT_DIR}/README.md" "${PACKAGE_ROOT}/usr/share/doc/cli-weather/README.md"
 cp "${ROOT_DIR}/LICENSE" "${PACKAGE_ROOT}/usr/share/doc/cli-weather/LICENSE"
 install -m 0755 "${ROOT_DIR}/packaging/bin/cli-weather" "${PACKAGE_ROOT}/usr/bin/cli-weather"
