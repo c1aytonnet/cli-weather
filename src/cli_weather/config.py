@@ -8,6 +8,7 @@ from typing import Any, Dict
 
 APP_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "cli-weather"
 CONFIG_PATH = APP_DIR / "config.json"
+SECRET_KEYS = {"smtp_password", "visualcrossing_api_key"}
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "provider": "metno",
@@ -50,11 +51,13 @@ def load_config(path: Path = CONFIG_PATH) -> Dict[str, Any]:
 
 def save_config(values: Dict[str, Any], path: Path = CONFIG_PATH) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
+    _set_directory_permissions(path.parent)
     config = DEFAULT_CONFIG.copy()
     config.update(values)
     with path.open("w", encoding="utf-8") as handle:
         json.dump(config, handle, indent=2, sort_keys=True)
         handle.write("\n")
+    os.chmod(path, 0o600)
     return path
 
 
@@ -69,6 +72,8 @@ def _load_environment_overrides() -> Dict[str, Any]:
     overrides: Dict[str, Any] = {}
     for key, env_var in ENV_VAR_MAP.items():
         raw_value = os.environ.get(env_var)
+        if raw_value is None or raw_value == "":
+            raw_value = _read_secret_file(env_var)
         if raw_value is None or raw_value == "":
             continue
         overrides[key] = _coerce_env_value(key, raw_value)
@@ -88,3 +93,26 @@ def _coerce_env_value(key: str, value: str) -> Any:
             f"Environment variable {ENV_VAR_MAP[key]} must be true/false, yes/no, on/off, or 1/0."
         )
     return value
+
+
+def redact_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    redacted = config.copy()
+    for key in SECRET_KEYS:
+        if redacted.get(key):
+            redacted[key] = "***redacted***"
+    return redacted
+
+
+def _read_secret_file(env_var: str) -> str | None:
+    file_var = f"{env_var}_FILE"
+    file_path = os.environ.get(file_var)
+    if not file_path:
+        return None
+    return Path(file_path).read_text(encoding="utf-8").strip()
+
+
+def _set_directory_permissions(path: Path) -> None:
+    try:
+        os.chmod(path, 0o700)
+    except PermissionError:
+        pass

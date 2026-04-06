@@ -28,6 +28,9 @@ def send_weather_email(config: Dict[str, Any], location: str | None = None, reci
         raise EmailConfigurationError("No location was provided and no default location is configured.")
     if not resolved_recipient:
         raise EmailConfigurationError("No email recipient was provided and no default recipient is configured.")
+    recipients = _parse_recipients(resolved_recipient)
+    if not recipients:
+        raise EmailConfigurationError("At least one valid email recipient is required.")
 
     report = fetch_weather_report(
         resolved_location,
@@ -38,7 +41,7 @@ def send_weather_email(config: Dict[str, Any], location: str | None = None, reci
     message = EmailMessage()
     message["Subject"] = f"Weather report for {report['location']}"
     message["From"] = config["sender"]
-    message["To"] = resolved_recipient
+    message["To"] = ", ".join(recipients)
     message.set_content(body)
 
     smtp_host = config["smtp_host"]
@@ -52,7 +55,7 @@ def send_weather_email(config: Dict[str, Any], location: str | None = None, reci
         with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
             if smtp_username:
                 server.login(smtp_username, smtp_password or "")
-            server.send_message(message)
+            server.send_message(message, to_addrs=recipients)
     else:
         with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.ehlo()
@@ -61,6 +64,10 @@ def send_weather_email(config: Dict[str, Any], location: str | None = None, reci
                 server.ehlo()
             if smtp_username:
                 server.login(smtp_username, smtp_password or "")
-            server.send_message(message)
+            server.send_message(message, to_addrs=recipients)
 
     return body
+
+
+def _parse_recipients(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]

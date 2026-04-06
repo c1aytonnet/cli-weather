@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from .config import CONFIG_PATH, load_config, set_config_values
+from .config import CONFIG_PATH, load_config, redact_config, set_config_values
 from .emailer import EmailConfigurationError, send_weather_email, validate_email_config
 from .scheduler import ScheduleError, add_schedule, list_schedules, remove_schedule
 from .weather import WeatherLookupError, fetch_weather_report, format_weather_report
@@ -157,7 +157,7 @@ def handle_weather_command(args: argparse.Namespace) -> int:
 
 def handle_config_command(args: argparse.Namespace) -> int:
     if args.config_command == "show":
-        print(json.dumps(load_config(args.config), indent=2, sort_keys=True))
+        print(json.dumps(redact_config(load_config(args.config)), indent=2, sort_keys=True))
         return 0
 
     updates = {

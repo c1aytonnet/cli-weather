@@ -277,6 +277,8 @@ Show the saved config:
 cli-weather config show
 ```
 
+Sensitive fields such as SMTP passwords and API keys are redacted in `config show`.
+
 ## Provider Selection
 
 Default:
@@ -363,10 +365,14 @@ Supported Docker environment variables:
   SMTP login username when required
 - `CLI_WEATHER_SMTP_PASSWORD`
   SMTP login password when required
+- `CLI_WEATHER_SMTP_PASSWORD_FILE`
+  Optional path to a file containing the SMTP password. Prefer this over plain env vars when using Docker secrets.
 - `CLI_WEATHER_SMTP_STARTTLS`
   `true` or `false`
 - `CLI_WEATHER_SMTP_SSL`
   `true` or `false`
+- `CLI_WEATHER_VISUALCROSSING_API_KEY_FILE`
+  Optional path to a file containing the Visual Crossing API key
 - `CLI_WEATHER_CRON_SCHEDULE`
   Standard cron expression used by the scheduler container, for example `0 7 * * *`
 - `TZ`
@@ -407,6 +413,7 @@ Why Docker is recommended for scheduled jobs:
 - avoids cron/path drift on the host
 - makes scheduled behavior easier to move between machines
 - fits naturally into existing multi-service Compose stacks
+- supports secret-file based configuration through `*_FILE` variables
 
 ### Alternative: Host Cron
 
@@ -428,6 +435,12 @@ The Linux packages install:
 - documentation in `/usr/share/doc/cli-weather`
 
 The packages are intentionally simple and depend only on system `python3`.
+
+## Security Notes
+
+- Config files are written with owner-only permissions when possible.
+- `cli-weather config show` redacts sensitive fields.
+- For containerized deployments, prefer `CLI_WEATHER_SMTP_PASSWORD_FILE` and `CLI_WEATHER_VISUALCROSSING_API_KEY_FILE` over plain environment variables when you have Docker secrets or mounted secret files available.
 
 ## Container Image
 

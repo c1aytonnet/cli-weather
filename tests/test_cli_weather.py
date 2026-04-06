@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import stat
 import tempfile
 import unittest
 from pathlib import Path
@@ -28,6 +29,7 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(saved["location"], "Chicago, IL")
             self.assertEqual(saved["recipient"], "user@example.com")
             self.assertEqual(saved["smtp_port"], 2525)
+            self.assertEqual(stat.S_IMODE(config_path.stat().st_mode), 0o600)
 
     @patch.dict(
         "os.environ",
@@ -49,10 +51,37 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(loaded["smtp_port"], 465)
             self.assertTrue(loaded["smtp_ssl"])
 
+    @patch.dict(
+        "os.environ",
+        {},
+        clear=False,
+    )
+    def test_load_config_supports_file_based_secrets(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            secret_path = Path(tmpdir) / "smtp_password.txt"
+            secret_path.write_text("super-secret\n", encoding="utf-8")
+            with patch.dict("os.environ", {"CLI_WEATHER_SMTP_PASSWORD_FILE": str(secret_path)}, clear=False):
+                loaded = config.load_config(Path(tmpdir) / "missing.json")
+
+            self.assertEqual(loaded["smtp_password"], "super-secret")
+
     def test_default_provider_is_metno(self) -> None:
         loaded = config.load_config(Path("/tmp/does-not-exist.json"))
 
         self.assertEqual(loaded["provider"], "metno")
+
+    def test_redact_config_masks_secrets(self) -> None:
+        redacted = config.redact_config(
+            {
+                "smtp_password": "secret",
+                "visualcrossing_api_key": "api-key",
+                "location": "Austin, TX",
+            }
+        )
+
+        self.assertEqual(redacted["smtp_password"], "***redacted***")
+        self.assertEqual(redacted["visualcrossing_api_key"], "***redacted***")
+        self.assertEqual(redacted["location"], "Austin, TX")
 
 
 class WeatherTests(unittest.TestCase):
@@ -389,7 +418,53 @@ class EmailTests(unittest.TestCase):
         )
         smtp_instance.starttls.assert_called_once()
         smtp_instance.login.assert_called_once_with("user", "secret")
-        smtp_instance.send_message.assert_called_once()
+        _, kwargs = smtp_instance.send_message.call_args
+        self.assertEqual(kwargs["to_addrs"], ["to@example.com"])
+
+    @patch("cli_weather.emailer.fetch_weather_report")
+    @patch("cli_weather.emailer.smtplib.SMTP")
+    def test_send_weather_email_splits_multiple_recipients(
+        self,
+        smtp_cls: MagicMock,
+        fetch_weather_report: MagicMock,
+    ) -> None:
+        fetch_weather_report.return_value = {
+            "location": "Chicago, IL",
+            "current": {
+                "temperature": 62,
+                "feels_like": 60,
+                "humidity": 50,
+                "wind_speed": 8,
+                "summary": "Mostly clear",
+            },
+            "forecast": [
+                {
+                    "date": "2026-04-06",
+                    "summary": "Clear sky",
+                    "high": 68,
+                    "low": 51,
+                    "precipitation_probability": 10,
+                }
+            ],
+        }
+        smtp_instance = smtp_cls.return_value.__enter__.return_value
+        smtp_instance.send_message = MagicMock()
+
+        emailer.send_weather_email(
+            {
+                "provider": "metno",
+                "location": "Chicago, IL",
+                "recipient": "to@example.com, friend@example.com",
+                "sender": "from@example.com",
+                "smtp_host": "smtp.example.com",
+                "smtp_port": 587,
+                "smtp_starttls": True,
+                "smtp_ssl": False,
+            }
+        )
+
+        _, kwargs = smtp_instance.send_message.call_args
+        self.assertEqual(kwargs["to_addrs"], ["to@example.com", "friend@example.com"])
 
     def test_validate_email_config_requires_core_fields(self) -> None:
         with self.assertRaises(emailer.EmailConfigurationError):
