@@ -31,6 +31,42 @@ If you already run other containers with Docker Compose, treat `cli-weather` as 
 
 ## Installation
 
+### macOS CLI Install
+
+If you want to use `cli-weather` as a normal persistent command on macOS, `pipx` is the recommended installation method.
+
+Install `pipx`:
+
+```bash
+brew install pipx
+pipx ensurepath
+```
+
+Then install `cli-weather` from the cloned repo:
+
+```bash
+git clone https://github.com/c1aytonnet/cli-weather.git
+cd cli-weather
+pipx install .
+```
+
+After that, you should be able to run:
+
+```bash
+cli-weather 78613
+cli-weather "Austin, TX"
+cli-weather "Paris, France"
+```
+
+If you prefer not to use `pipx`, you can still install from source with Python:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install .
+```
+
 ### Option 1: Add To Your Own Docker Compose File
 
 This is the recommended setup.
