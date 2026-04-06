@@ -93,6 +93,14 @@ docker compose run --rm cli-weather cli-weather "Austin, TX"
 docker compose up -d cli-weather-scheduler
 ```
 
+What those commands do:
+- `docker compose build cli-weather cli-weather-scheduler`
+  Builds the Docker image used by the interactive CLI service and the scheduler service.
+- `docker compose run --rm cli-weather cli-weather "Austin, TX"`
+  Runs a one-off weather lookup inside a temporary container so you can verify the app works before enabling scheduled jobs.
+- `docker compose up -d cli-weather-scheduler`
+  Starts the background scheduler container, which uses cron to send email on the schedule defined by `CLI_WEATHER_CRON_SCHEDULE`.
+
 This model is ideal when:
 - you already manage services in your own Compose stack
 - you want scheduled jobs to live alongside your other containers
