@@ -18,10 +18,10 @@ SMTP email delivery, and optional scheduling support.
 mkdir -p %{buildroot}/opt/cli-weather
 mkdir -p %{buildroot}/usr/bin
 mkdir -p %{buildroot}/usr/share/doc/cli-weather
-cp -R src %{buildroot}/opt/cli-weather/src
-cp README.md %{buildroot}/usr/share/doc/cli-weather/README.md
-cp LICENSE %{buildroot}/usr/share/doc/cli-weather/LICENSE
-install -m 0755 packaging/bin/cli-weather %{buildroot}/usr/bin/cli-weather
+cp -R %{project_root}/src %{buildroot}/opt/cli-weather/src
+cp %{project_root}/README.md %{buildroot}/usr/share/doc/cli-weather/README.md
+cp %{project_root}/LICENSE %{buildroot}/usr/share/doc/cli-weather/LICENSE
+install -m 0755 %{project_root}/packaging/bin/cli-weather %{buildroot}/usr/bin/cli-weather
 
 %files
 /opt/cli-weather/src

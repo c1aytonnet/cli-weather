@@ -18,6 +18,7 @@ cp "${ROOT_DIR}/packaging/rpm/cli-weather.spec" "${RPM_TOPDIR}/SPECS/cli-weather
 
 rpmbuild -bb \
   --define "_topdir ${RPM_TOPDIR}" \
+  --define "project_root ${ROOT_DIR}" \
   --buildroot "${RPM_TOPDIR}/BUILDROOT" \
   "${RPM_TOPDIR}/SPECS/cli-weather.spec"
 
