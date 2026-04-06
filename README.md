@@ -31,9 +31,44 @@ python3 -m pip install --upgrade pip
 python3 -m pip install .
 ```
 
+### Docker Compose
+
+Docker Compose is the preferred way to run scheduled jobs.
+
+Requirements:
+- Docker
+- Docker Compose
+
+Initial setup:
+
+```bash
+cp .env.example .env
+docker compose build
+```
+
+After that, you can run one-off commands:
+
+```bash
+docker compose run --rm cli-weather cli-weather 78613
+docker compose run --rm cli-weather cli-weather "Paris, France"
+docker compose run --rm cli-weather cli-weather email send
+```
+
 ### Debian Package
 
-Build on a Linux machine with `dpkg-deb` available:
+Prebuilt package artifact is tracked in git at:
+
+```bash
+release-assets/v0.5.0/cli-weather_0.5.0_all.deb
+```
+
+Install directly from the checked-out repository:
+
+```bash
+sudo dpkg -i release-assets/v0.5.0/cli-weather_0.5.0_all.deb
+```
+
+Or build a fresh package on Linux with `dpkg-deb` available:
 
 ```bash
 ./scripts/build-deb.sh
@@ -47,7 +82,19 @@ sudo dpkg -i dist/cli-weather_0.5.0_all.deb
 
 ### RPM Package
 
-Build on a Linux machine with `rpmbuild` available:
+Prebuilt package artifact is tracked in git at:
+
+```bash
+release-assets/v0.5.0/cli-weather-0.5.0-1.noarch.rpm
+```
+
+Install directly from the checked-out repository:
+
+```bash
+sudo rpm -i release-assets/v0.5.0/cli-weather-0.5.0-1.noarch.rpm
+```
+
+Or build a fresh package on Linux with `rpmbuild` available:
 
 ```bash
 ./scripts/build-rpm.sh
@@ -165,6 +212,35 @@ CLI_WEATHER_CRON_SCHEDULE=0 7 * * *
 TZ=America/Chicago
 ```
 
+Supported Docker environment variables:
+
+- `CLI_WEATHER_PROVIDER`
+  Supported values: `metno`, `open-meteo`, `visualcrossing`
+- `CLI_WEATHER_LOCATION`
+  Examples: `78613`, `Austin, TX`, `Paris, France`
+- `CLI_WEATHER_VISUALCROSSING_API_KEY`
+  Required only when provider is `visualcrossing`
+- `CLI_WEATHER_RECIPIENT`
+  Destination email address for scheduled and immediate sends
+- `CLI_WEATHER_SENDER`
+  From address used in SMTP mail
+- `CLI_WEATHER_SMTP_HOST`
+  SMTP server hostname
+- `CLI_WEATHER_SMTP_PORT`
+  SMTP server port
+- `CLI_WEATHER_SMTP_USERNAME`
+  SMTP login username when required
+- `CLI_WEATHER_SMTP_PASSWORD`
+  SMTP login password when required
+- `CLI_WEATHER_SMTP_STARTTLS`
+  `true` or `false`
+- `CLI_WEATHER_SMTP_SSL`
+  `true` or `false`
+- `CLI_WEATHER_CRON_SCHEDULE`
+  Standard cron expression used by the scheduler container, for example `0 7 * * *`
+- `TZ`
+  Timezone used by the scheduler container, for example `America/Chicago`
+
 Run an interactive weather check in Docker:
 
 ```bash
@@ -181,6 +257,12 @@ Start the scheduler:
 
 ```bash
 docker compose --profile scheduler up -d cli-weather-scheduler
+```
+
+View scheduler logs:
+
+```bash
+docker compose --profile scheduler logs -f cli-weather-scheduler
 ```
 
 Stop the scheduler:
