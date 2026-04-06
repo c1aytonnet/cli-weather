@@ -297,13 +297,13 @@ docker compose run --rm cli-weather cli-weather email send
 Prebuilt package artifact is tracked in git at:
 
 ```bash
-release-assets/v0.5.0/cli-weather_0.5.0_all.deb
+release-assets/v0.6.0/cli-weather_0.6.0_all.deb
 ```
 
 Install directly from the checked-out repository:
 
 ```bash
-sudo dpkg -i release-assets/v0.5.0/cli-weather_0.5.0_all.deb
+sudo dpkg -i release-assets/v0.6.0/cli-weather_0.6.0_all.deb
 ```
 
 Or build a fresh package on Linux with `dpkg-deb` available:
@@ -315,7 +315,7 @@ Or build a fresh package on Linux with `dpkg-deb` available:
 Install:
 
 ```bash
-sudo dpkg -i dist/cli-weather_0.5.0_all.deb
+sudo dpkg -i dist/cli-weather_0.6.0_all.deb
 ```
 
 ### RPM Package
@@ -323,13 +323,13 @@ sudo dpkg -i dist/cli-weather_0.5.0_all.deb
 Prebuilt package artifact is tracked in git at:
 
 ```bash
-release-assets/v0.5.0/cli-weather-0.5.0-1.noarch.rpm
+release-assets/v0.6.0/cli-weather-0.6.0-1.noarch.rpm
 ```
 
 Install directly from the checked-out repository:
 
 ```bash
-sudo rpm -i release-assets/v0.5.0/cli-weather-0.5.0-1.noarch.rpm
+sudo rpm -i release-assets/v0.6.0/cli-weather-0.6.0-1.noarch.rpm
 ```
 
 Or build a fresh package on Linux with `rpmbuild` available:
@@ -341,7 +341,7 @@ Or build a fresh package on Linux with `rpmbuild` available:
 Install:
 
 ```bash
-sudo rpm -i dist/rpmbuild/RPMS/noarch/cli-weather-0.5.0-1.noarch.rpm
+sudo rpm -i dist/rpmbuild/RPMS/noarch/cli-weather-0.6.0-1.noarch.rpm
 ```
 
 ### Option 4: From Source With Pip
