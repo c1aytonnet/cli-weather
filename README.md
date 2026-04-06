@@ -35,43 +35,40 @@ If you already run other containers with Docker Compose, treat `cli-weather` as 
 
 This is the recommended setup.
 
+Recommended configuration model:
+- put normal non-secret settings in a local `.env` file that lives next to your `compose.yaml`
+- reference that file with `env_file: .env`
+- keep secrets such as SMTP passwords and API keys out of `compose.yaml`
+- prefer Docker secrets or mounted secret files with `*_FILE` variables for secrets
+
 Use the published GitHub Container Registry image, then add these services to your own `compose.yaml`:
 
 ```yaml
 services:
   cli-weather:
     image: ghcr.io/c1aytonnet/cli-weather:latest
+    env_file:
+      - .env
     environment:
-      CLI_WEATHER_PROVIDER: metno
-      CLI_WEATHER_LOCATION: Austin, TX
-      CLI_WEATHER_RECIPIENT: you@example.com
-      CLI_WEATHER_SENDER: you@example.com
-      CLI_WEATHER_SMTP_HOST: smtp.example.com
-      CLI_WEATHER_SMTP_PORT: "587"
-      CLI_WEATHER_SMTP_USERNAME: you@example.com
-      CLI_WEATHER_SMTP_PASSWORD: app-password
-      CLI_WEATHER_SMTP_STARTTLS: "true"
-      CLI_WEATHER_SMTP_SSL: "false"
-      TZ: America/Chicago
+      CLI_WEATHER_SMTP_PASSWORD_FILE: /run/secrets/cli_weather_smtp_password
+      CLI_WEATHER_VISUALCROSSING_API_KEY_FILE: /run/secrets/cli_weather_visualcrossing_api_key
+    secrets:
+      - cli_weather_smtp_password
+      - cli_weather_visualcrossing_api_key
     volumes:
       - cli-weather-config:/root/.config/cli-weather
     command: ["cli-weather", "--help"]
 
   cli-weather-scheduler:
     image: ghcr.io/c1aytonnet/cli-weather:latest
+    env_file:
+      - .env
     environment:
-      CLI_WEATHER_PROVIDER: metno
-      CLI_WEATHER_LOCATION: Austin, TX
-      CLI_WEATHER_RECIPIENT: you@example.com
-      CLI_WEATHER_SENDER: you@example.com
-      CLI_WEATHER_SMTP_HOST: smtp.example.com
-      CLI_WEATHER_SMTP_PORT: "587"
-      CLI_WEATHER_SMTP_USERNAME: you@example.com
-      CLI_WEATHER_SMTP_PASSWORD: app-password
-      CLI_WEATHER_SMTP_STARTTLS: "true"
-      CLI_WEATHER_SMTP_SSL: "false"
-      CLI_WEATHER_CRON_SCHEDULE: "0 7 * * *"
-      TZ: America/Chicago
+      CLI_WEATHER_SMTP_PASSWORD_FILE: /run/secrets/cli_weather_smtp_password
+      CLI_WEATHER_VISUALCROSSING_API_KEY_FILE: /run/secrets/cli_weather_visualcrossing_api_key
+    secrets:
+      - cli_weather_smtp_password
+      - cli_weather_visualcrossing_api_key
     volumes:
       - cli-weather-config:/root/.config/cli-weather
     entrypoint: ["/app/docker/scheduler-entrypoint.sh"]
@@ -79,7 +76,34 @@ services:
 
 volumes:
   cli-weather-config:
+
+secrets:
+  cli_weather_smtp_password:
+    file: ./secrets/cli_weather_smtp_password.txt
+  cli_weather_visualcrossing_api_key:
+    file: ./secrets/cli_weather_visualcrossing_api_key.txt
 ```
+
+Create a `.env` file next to your `compose.yaml` for the non-secret settings:
+
+```env
+CLI_WEATHER_PROVIDER=metno
+CLI_WEATHER_LOCATION=Austin, TX
+CLI_WEATHER_RECIPIENT=you@example.com,friend@example.com
+CLI_WEATHER_SENDER=you@example.com
+CLI_WEATHER_SMTP_HOST=smtp.example.com
+CLI_WEATHER_SMTP_PORT=587
+CLI_WEATHER_SMTP_USERNAME=you@example.com
+CLI_WEATHER_SMTP_STARTTLS=true
+CLI_WEATHER_SMTP_SSL=false
+CLI_WEATHER_CRON_SCHEDULE=0 7 * * *
+TZ=America/Chicago
+```
+
+In this model:
+- `.env` is the preferred place for ordinary configuration values
+- the Compose `secrets:` section is the preferred place for SMTP passwords and API keys
+- you only put secrets directly in `environment:` when you intentionally accept that tradeoff
 
 Then run:
 
@@ -100,7 +124,7 @@ What those commands do:
 This model is ideal when:
 - you already manage services in your own Compose stack
 - you want scheduled jobs to live alongside your other containers
-- you prefer all configuration to stay inside your own `compose.yaml` or Compose-managed secrets/env files
+- you prefer configuration to live in your own `.env`, Compose secrets, and `compose.yaml`
 
 ### Option 2: Use The Included Docker Compose File
 
@@ -329,6 +353,8 @@ cp .env.example .env
 
 Edit `.env` with your provider, location, SMTP settings, schedule, and timezone.
 
+For the included Compose setup, `.env` is the preferred way to provide non-secret configuration. If you want stronger secret handling, replace plain password or API key values with `*_FILE` variables that point to mounted secret files.
+
 Useful example values:
 
 ```bash
@@ -343,6 +369,13 @@ CLI_WEATHER_SMTP_PASSWORD=app-password
 CLI_WEATHER_SMTP_STARTTLS=true
 CLI_WEATHER_CRON_SCHEDULE=0 7 * * *
 TZ=America/Chicago
+```
+
+Safer secret-file example:
+
+```bash
+CLI_WEATHER_SMTP_PASSWORD_FILE=/run/secrets/cli_weather_smtp_password
+CLI_WEATHER_VISUALCROSSING_API_KEY_FILE=/run/secrets/cli_weather_visualcrossing_api_key
 ```
 
 Supported Docker environment variables:
@@ -364,7 +397,7 @@ Supported Docker environment variables:
 - `CLI_WEATHER_SMTP_USERNAME`
   SMTP login username when required
 - `CLI_WEATHER_SMTP_PASSWORD`
-  SMTP login password when required
+  SMTP login password when required. Prefer `CLI_WEATHER_SMTP_PASSWORD_FILE` for Docker deployments.
 - `CLI_WEATHER_SMTP_PASSWORD_FILE`
   Optional path to a file containing the SMTP password. Prefer this over plain env vars when using Docker secrets.
 - `CLI_WEATHER_SMTP_STARTTLS`
@@ -372,7 +405,7 @@ Supported Docker environment variables:
 - `CLI_WEATHER_SMTP_SSL`
   `true` or `false`
 - `CLI_WEATHER_VISUALCROSSING_API_KEY_FILE`
-  Optional path to a file containing the Visual Crossing API key
+  Optional path to a file containing the Visual Crossing API key. Prefer this over plain env vars in Docker when possible.
 - `CLI_WEATHER_CRON_SCHEDULE`
   Standard cron expression used by the scheduler container, for example `0 7 * * *`
 - `TZ`
