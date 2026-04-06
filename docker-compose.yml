@@ -1,0 +1,30 @@
+services:
+  cli-weather:
+    build:
+      context: .
+    image: cli-weather:latest
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ:-UTC}
+    volumes:
+      - cli-weather-config:/root/.config/cli-weather
+    command: ["cli-weather", "--help"]
+
+  cli-weather-scheduler:
+    build:
+      context: .
+    image: cli-weather:latest
+    env_file:
+      - .env
+    environment:
+      CLI_WEATHER_CRON_SCHEDULE: ${CLI_WEATHER_CRON_SCHEDULE:-0 7 * * *}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - cli-weather-config:/root/.config/cli-weather
+    entrypoint: ["/app/docker/scheduler-entrypoint.sh"]
+    restart: unless-stopped
+    profiles: ["scheduler"]
+
+volumes:
+  cli-weather-config:

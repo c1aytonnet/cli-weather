@@ -1,0 +1,10 @@
+Package: cli-weather
+Version: 0.5.0
+Section: utils
+Priority: optional
+Architecture: all
+Maintainer: Codex
+Depends: python3 (>= 3.9)
+Description: CLI weather reports and scheduled email delivery
+ A Python command line weather app with current conditions, 7-day forecasts,
+ SMTP email delivery, and optional scheduling support.
