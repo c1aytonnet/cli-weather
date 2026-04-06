@@ -16,6 +16,85 @@ The preferred installation model is:
 
 If you already run other containers with Docker Compose, treat `cli-weather` as one more service in your own `compose.yaml`.
 
+## Quick Start
+
+From the directory that contains your `compose.yaml`, such as `~/docker-media`:
+
+Step 1: bootstrap the `cli-weather` folder
+
+```bash
+git clone https://github.com/c1aytonnet/cli-weather.git
+cd cli-weather
+./scripts/init-docker-config.sh ~/docker-media
+```
+
+Step 2: add these service definitions to `~/docker-media/compose.yaml`
+
+```yaml
+services:
+  cli-weather:
+    image: ghcr.io/c1aytonnet/cli-weather:latest
+    env_file:
+      - ./cli-weather/.env
+    environment:
+      CLI_WEATHER_CONFIG_DIR: /data
+      CLI_WEATHER_SMTP_PASSWORD_FILE: /run/secrets/cli_weather_smtp_password
+    secrets:
+      - cli_weather_smtp_password
+    volumes:
+      - ./cli-weather:/data
+    command: ["cli-weather", "--help"]
+
+  cli-weather-scheduler:
+    image: ghcr.io/c1aytonnet/cli-weather:latest
+    env_file:
+      - ./cli-weather/.env
+    environment:
+      CLI_WEATHER_CONFIG_DIR: /data
+      CLI_WEATHER_SMTP_PASSWORD_FILE: /run/secrets/cli_weather_smtp_password
+    secrets:
+      - cli_weather_smtp_password
+    volumes:
+      - ./cli-weather:/data
+    entrypoint: ["/app/docker/scheduler-entrypoint.sh"]
+    restart: unless-stopped
+
+secrets:
+  cli_weather_smtp_password:
+    file: ./cli-weather/secrets/cli_weather_smtp_password.txt
+```
+
+If you use `visualcrossing`, also add:
+
+```yaml
+environment:
+  CLI_WEATHER_VISUALCROSSING_API_KEY_FILE: /run/secrets/cli_weather_visualcrossing_api_key
+secrets:
+  - cli_weather_visualcrossing_api_key
+```
+
+and:
+
+```yaml
+secrets:
+  cli_weather_visualcrossing_api_key:
+    file: ./cli-weather/secrets/cli_weather_visualcrossing_api_key.txt
+```
+
+Step 3: edit your new files
+
+- `~/docker-media/cli-weather/.env`
+- `~/docker-media/cli-weather/secrets/cli_weather_smtp_password.txt`
+
+Step 4: start the services
+
+```bash
+cd ~/docker-media
+docker compose pull cli-weather cli-weather-scheduler
+docker compose run --rm cli-weather cli-weather "Austin, TX"
+docker compose up -d cli-weather-scheduler
+```
+
 Recommended host layout for Docker:
 
 ```text
