@@ -2,25 +2,21 @@ services:
   cli-weather:
     image: ghcr.io/c1aytonnet/cli-weather:latest
     env_file:
-      - .env
+      - ./cli-weather/.env
     environment:
-      TZ: ${TZ:-UTC}
+      CLI_WEATHER_CONFIG_DIR: /data
     volumes:
-      - cli-weather-config:/root/.config/cli-weather
+      - ./cli-weather:/data
     command: ["cli-weather", "--help"]
 
   cli-weather-scheduler:
     image: ghcr.io/c1aytonnet/cli-weather:latest
     env_file:
-      - .env
+      - ./cli-weather/.env
     environment:
-      CLI_WEATHER_CRON_SCHEDULE: ${CLI_WEATHER_CRON_SCHEDULE:-0 7 * * *}
-      TZ: ${TZ:-UTC}
+      CLI_WEATHER_CONFIG_DIR: /data
     volumes:
-      - cli-weather-config:/root/.config/cli-weather
+      - ./cli-weather:/data
     entrypoint: ["/app/docker/scheduler-entrypoint.sh"]
     restart: unless-stopped
     profiles: ["scheduler"]
-
-volumes:
-  cli-weather-config:

@@ -13,6 +13,22 @@ from cli_weather import cli, config, emailer, scheduler, weather
 
 
 class ConfigTests(unittest.TestCase):
+    def test_config_path_honors_cli_weather_config_dir(self) -> None:
+        import importlib
+        import os
+
+        original = os.environ.get("CLI_WEATHER_CONFIG_DIR")
+        try:
+            os.environ["CLI_WEATHER_CONFIG_DIR"] = "/tmp/cli-weather-data"
+            reloaded = importlib.reload(config)
+            self.assertEqual(reloaded.CONFIG_PATH, Path("/tmp/cli-weather-data/config.json"))
+        finally:
+            if original is None:
+                os.environ.pop("CLI_WEATHER_CONFIG_DIR", None)
+            else:
+                os.environ["CLI_WEATHER_CONFIG_DIR"] = original
+            importlib.reload(config)
+
     def test_set_config_values_persists_updates(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             config_path = Path(tmpdir) / "config.json"

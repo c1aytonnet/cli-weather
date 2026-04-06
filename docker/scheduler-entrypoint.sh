@@ -4,10 +4,23 @@ set -eu
 SCHEDULE="${CLI_WEATHER_CRON_SCHEDULE:-0 7 * * *}"
 TIMEZONE="${TZ:-UTC}"
 CRON_FILE="/etc/cron.d/cli-weather"
-LOG_FILE="/var/log/cli-weather.log"
+CONFIG_DIR="${CLI_WEATHER_CONFIG_DIR:-}"
+LOG_FILE="${CLI_WEATHER_LOG_PATH:-}"
 ENV_FILE="/run/cli-weather/cli-weather.env"
 RUNNER_SCRIPT="/usr/local/bin/cli-weather-cron-send"
 
+if [ -z "$LOG_FILE" ]; then
+  if [ -n "$CONFIG_DIR" ]; then
+    LOG_FILE="${CONFIG_DIR}/scheduler.log"
+  else
+    LOG_FILE="/var/log/cli-weather.log"
+  fi
+fi
+
+if [ -n "$CONFIG_DIR" ]; then
+  mkdir -p "$CONFIG_DIR"
+  mkdir -p "$CONFIG_DIR/secrets"
+fi
 touch "$LOG_FILE"
 mkdir -p "$(dirname "$ENV_FILE")"
 
@@ -45,6 +58,9 @@ write_env_var "CLI_WEATHER_SMTP_SSL" "${CLI_WEATHER_SMTP_SSL:-}"
 write_env_var "CLI_WEATHER_PROVIDER" "${CLI_WEATHER_PROVIDER:-}"
 write_env_var "CLI_WEATHER_VISUALCROSSING_API_KEY" "${CLI_WEATHER_VISUALCROSSING_API_KEY:-}"
 write_env_var "CLI_WEATHER_VISUALCROSSING_API_KEY_FILE" "${CLI_WEATHER_VISUALCROSSING_API_KEY_FILE:-}"
+write_env_var "CLI_WEATHER_CONFIG_DIR" "${CLI_WEATHER_CONFIG_DIR:-}"
+write_env_var "CLI_WEATHER_CONFIG_PATH" "${CLI_WEATHER_CONFIG_PATH:-}"
+write_env_var "CLI_WEATHER_LOG_PATH" "${LOG_FILE}"
 write_env_var "TZ" "${TIMEZONE}"
 chmod 0600 "$ENV_FILE"
 
