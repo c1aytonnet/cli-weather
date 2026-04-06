@@ -265,6 +265,12 @@ cli-weather config set --smtp-username you@example.com --smtp-password "app-pass
 cli-weather config set --smtp-starttls true
 ```
 
+Multiple recipients are supported by separating email addresses with commas:
+
+```bash
+cli-weather config set --recipient "you@example.com,friend@example.com"
+```
+
 Show the saved config:
 
 ```bash
@@ -301,6 +307,12 @@ cli-weather email send
 cli-weather email send --location "Paris, France" --recipient friend@example.com
 ```
 
+You can also send to multiple recipients:
+
+```bash
+cli-weather email send --recipient "you@example.com,friend@example.com"
+```
+
 The email body intentionally matches the normal CLI text output.
 
 ## Scheduled Jobs
@@ -320,7 +332,7 @@ Useful example values:
 ```bash
 CLI_WEATHER_PROVIDER=metno
 CLI_WEATHER_LOCATION=Austin, TX
-CLI_WEATHER_RECIPIENT=you@example.com
+CLI_WEATHER_RECIPIENT=you@example.com,friend@example.com
 CLI_WEATHER_SENDER=you@example.com
 CLI_WEATHER_SMTP_HOST=smtp.example.com
 CLI_WEATHER_SMTP_PORT=587
@@ -340,7 +352,7 @@ Supported Docker environment variables:
 - `CLI_WEATHER_VISUALCROSSING_API_KEY`
   Required only when provider is `visualcrossing`
 - `CLI_WEATHER_RECIPIENT`
-  Destination email address for scheduled and immediate sends
+  Destination email address for scheduled and immediate sends. Multiple addresses can be separated with commas.
 - `CLI_WEATHER_SENDER`
   From address used in SMTP mail
 - `CLI_WEATHER_SMTP_HOST`
