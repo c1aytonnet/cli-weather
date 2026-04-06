@@ -118,12 +118,21 @@ secrets:
 Create the app folder and secret folder on the host:
 
 ```bash
-mkdir -p ./cli-weather/secrets
+./scripts/init-docker-config.sh .
 ```
 
-Create secret files with owner-only permissions:
+That script:
+- creates `./cli-weather/`
+- copies `.env.example` to `./cli-weather/.env` if it does not already exist
+- creates `./cli-weather/secrets/cli_weather_smtp_password.txt`
+- creates `./cli-weather/secrets/cli_weather_visualcrossing_api_key.txt`
+- sets the secret file permissions to `0600`
+- leaves existing files in place if you already customized them
+
+If you prefer to create the files manually, the equivalent commands are:
 
 ```bash
+mkdir -p ./cli-weather/secrets
 printf '%s\n' 'your-app-password' > ./cli-weather/secrets/cli_weather_smtp_password.txt
 chmod 600 ./cli-weather/secrets/cli_weather_smtp_password.txt
 ```
@@ -190,8 +199,7 @@ Requirements:
 Initial setup:
 
 ```bash
-mkdir -p ./cli-weather
-cp .env.example ./cli-weather/.env
+./scripts/init-docker-config.sh .
 docker compose pull
 ```
 
@@ -407,8 +415,7 @@ The email body intentionally matches the normal CLI text output.
 Copy the sample environment file:
 
 ```bash
-mkdir -p ./cli-weather
-cp .env.example ./cli-weather/.env
+./scripts/init-docker-config.sh .
 ```
 
 Edit `./cli-weather/.env` with your provider, location, SMTP settings, schedule, and timezone.
