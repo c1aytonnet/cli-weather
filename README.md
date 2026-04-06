@@ -35,14 +35,12 @@ If you already run other containers with Docker Compose, treat `cli-weather` as 
 
 This is the recommended setup.
 
-Use the project `Dockerfile` as the image build source, then add these services to your own `compose.yaml`:
+Use the published GitHub Container Registry image, then add these services to your own `compose.yaml`:
 
 ```yaml
 services:
   cli-weather:
-    build:
-      context: /path/to/cli-weather
-    image: cli-weather:0.5.0
+    image: ghcr.io/c1aytonnet/cli-weather:latest
     environment:
       CLI_WEATHER_PROVIDER: metno
       CLI_WEATHER_LOCATION: Austin, TX
@@ -60,9 +58,7 @@ services:
     command: ["cli-weather", "--help"]
 
   cli-weather-scheduler:
-    build:
-      context: /path/to/cli-weather
-    image: cli-weather:0.5.0
+    image: ghcr.io/c1aytonnet/cli-weather:latest
     environment:
       CLI_WEATHER_PROVIDER: metno
       CLI_WEATHER_LOCATION: Austin, TX
@@ -88,14 +84,14 @@ volumes:
 Then run:
 
 ```bash
-docker compose build cli-weather cli-weather-scheduler
+docker compose pull cli-weather cli-weather-scheduler
 docker compose run --rm cli-weather cli-weather "Austin, TX"
 docker compose up -d cli-weather-scheduler
 ```
 
 What those commands do:
-- `docker compose build cli-weather cli-weather-scheduler`
-  Builds the Docker image used by the interactive CLI service and the scheduler service.
+- `docker compose pull cli-weather cli-weather-scheduler`
+  Pulls the published image from GitHub Container Registry.
 - `docker compose run --rm cli-weather cli-weather "Austin, TX"`
   Runs a one-off weather lookup inside a temporary container so you can verify the app works before enabling scheduled jobs.
 - `docker compose up -d cli-weather-scheduler`
@@ -113,12 +109,13 @@ Use this if you want a quick standalone setup from this repo without merging int
 Requirements:
 - Docker
 - Docker Compose
+- access to `ghcr.io/c1aytonnet/cli-weather:latest`
 
 Initial setup:
 
 ```bash
 cp .env.example .env
-docker compose build
+docker compose pull
 ```
 
 After that, you can run one-off commands:
@@ -419,6 +416,18 @@ The Linux packages install:
 - documentation in `/usr/share/doc/cli-weather`
 
 The packages are intentionally simple and depend only on system `python3`.
+
+## Container Image
+
+The published container image is:
+
+```bash
+ghcr.io/c1aytonnet/cli-weather:latest
+```
+
+GitHub Actions publishes:
+- `latest` from the default branch
+- `v*` tag images from git release tags
 
 ## Troubleshooting
 

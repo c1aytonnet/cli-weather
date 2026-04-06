@@ -1,8 +1,6 @@
 services:
   cli-weather:
-    build:
-      context: .
-    image: cli-weather:latest
+    image: ghcr.io/c1aytonnet/cli-weather:latest
     env_file:
       - .env
     environment:
@@ -12,9 +10,7 @@ services:
     command: ["cli-weather", "--help"]
 
   cli-weather-scheduler:
-    build:
-      context: .
-    image: cli-weather:latest
+    image: ghcr.io/c1aytonnet/cli-weather:latest
     env_file:
       - .env
     environment:
