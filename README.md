@@ -7,6 +7,15 @@ It can:
 - send the same report by email
 - run scheduled email delivery, with Docker Compose as the preferred scheduler path
 
+## Recommended Installation
+
+The preferred installation model is:
+
+1. add `cli-weather` to your own existing Docker Compose stack
+2. use the included `.deb` or `.rpm` package for native host installs only when you want a host-level command
+
+If you already run other containers with Docker Compose, treat `cli-weather` as one more service in your own `compose.yaml`.
+
 ## Features
 
 - Current weather and 7-day forecast in Fahrenheit
@@ -22,18 +31,76 @@ It can:
 
 ## Installation
 
-### From Source With Pip
+### Option 1: Add To Your Own Docker Compose File
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-python3 -m pip install .
+This is the recommended setup.
+
+Use the project `Dockerfile` as the image build source, then add these services to your own `compose.yaml`:
+
+```yaml
+services:
+  cli-weather:
+    build:
+      context: /path/to/cli-weather
+    image: cli-weather:0.5.0
+    environment:
+      CLI_WEATHER_PROVIDER: metno
+      CLI_WEATHER_LOCATION: Austin, TX
+      CLI_WEATHER_RECIPIENT: you@example.com
+      CLI_WEATHER_SENDER: you@example.com
+      CLI_WEATHER_SMTP_HOST: smtp.example.com
+      CLI_WEATHER_SMTP_PORT: "587"
+      CLI_WEATHER_SMTP_USERNAME: you@example.com
+      CLI_WEATHER_SMTP_PASSWORD: app-password
+      CLI_WEATHER_SMTP_STARTTLS: "true"
+      CLI_WEATHER_SMTP_SSL: "false"
+      TZ: America/Chicago
+    volumes:
+      - cli-weather-config:/root/.config/cli-weather
+    command: ["cli-weather", "--help"]
+
+  cli-weather-scheduler:
+    build:
+      context: /path/to/cli-weather
+    image: cli-weather:0.5.0
+    environment:
+      CLI_WEATHER_PROVIDER: metno
+      CLI_WEATHER_LOCATION: Austin, TX
+      CLI_WEATHER_RECIPIENT: you@example.com
+      CLI_WEATHER_SENDER: you@example.com
+      CLI_WEATHER_SMTP_HOST: smtp.example.com
+      CLI_WEATHER_SMTP_PORT: "587"
+      CLI_WEATHER_SMTP_USERNAME: you@example.com
+      CLI_WEATHER_SMTP_PASSWORD: app-password
+      CLI_WEATHER_SMTP_STARTTLS: "true"
+      CLI_WEATHER_SMTP_SSL: "false"
+      CLI_WEATHER_CRON_SCHEDULE: "0 7 * * *"
+      TZ: America/Chicago
+    volumes:
+      - cli-weather-config:/root/.config/cli-weather
+    entrypoint: ["/app/docker/scheduler-entrypoint.sh"]
+    restart: unless-stopped
+
+volumes:
+  cli-weather-config:
 ```
 
-### Docker Compose
+Then run:
 
-Docker Compose is the preferred way to run scheduled jobs.
+```bash
+docker compose build cli-weather cli-weather-scheduler
+docker compose run --rm cli-weather cli-weather "Austin, TX"
+docker compose up -d cli-weather-scheduler
+```
+
+This model is ideal when:
+- you already manage services in your own Compose stack
+- you want scheduled jobs to live alongside your other containers
+- you prefer all configuration to stay inside your own `compose.yaml` or Compose-managed secrets/env files
+
+### Option 2: Use The Included Docker Compose File
+
+Use this if you want a quick standalone setup from this repo without merging into your existing stack.
 
 Requirements:
 - Docker
@@ -53,6 +120,8 @@ docker compose run --rm cli-weather cli-weather 78613
 docker compose run --rm cli-weather cli-weather "Paris, France"
 docker compose run --rm cli-weather cli-weather email send
 ```
+
+### Option 3: Install Natively With Debian Or RPM Packages
 
 ### Debian Package
 
@@ -104,6 +173,15 @@ Install:
 
 ```bash
 sudo rpm -i dist/rpmbuild/RPMS/noarch/cli-weather-0.5.0-1.noarch.rpm
+```
+
+### Option 4: From Source With Pip
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install .
 ```
 
 ## Basic Usage
@@ -275,6 +353,7 @@ Why Docker is recommended for scheduled jobs:
 - keeps runtime and environment variables together
 - avoids cron/path drift on the host
 - makes scheduled behavior easier to move between machines
+- fits naturally into existing multi-service Compose stacks
 
 ### Alternative: Host Cron
 
