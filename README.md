@@ -104,7 +104,7 @@ Step 4: start the services
 cd ~/docker-media
 docker compose pull cli-weather cli-weather-scheduler
 docker compose run --rm cli-weather cli-weather "Austin, TX"
-docker compose up -d cli-weather-scheduler
+docker compose up -d
 ```
 
 Recommended host layout for Docker:
@@ -286,7 +286,7 @@ Then run:
 ```bash
 docker compose pull cli-weather cli-weather-scheduler
 docker compose run --rm cli-weather cli-weather "Austin, TX"
-docker compose up -d cli-weather-scheduler
+docker compose up -d
 ```
 
 What those commands do:
@@ -294,7 +294,7 @@ What those commands do:
   Pulls the published image from GitHub Container Registry.
 - `docker compose run --rm cli-weather cli-weather "Austin, TX"`
   Runs a one-off weather lookup inside a temporary container so you can verify the app works before enabling scheduled jobs.
-- `docker compose up -d cli-weather-scheduler`
+- `docker compose up -d`
   Starts the background scheduler container, which uses cron to send email on the schedule defined by `CLI_WEATHER_CRON_SCHEDULE`.
 
 This model is ideal when:
@@ -617,19 +617,19 @@ docker compose run --rm cli-weather cli-weather email send
 Start the scheduler:
 
 ```bash
-docker compose --profile scheduler up -d cli-weather-scheduler
+docker compose up -d
 ```
 
 View scheduler logs:
 
 ```bash
-docker compose --profile scheduler logs -f cli-weather-scheduler
+docker compose logs -f cli-weather-scheduler
 ```
 
 Stop the scheduler:
 
 ```bash
-docker compose --profile scheduler stop cli-weather-scheduler
+docker compose stop cli-weather-scheduler
 ```
 
 Why Docker is recommended for scheduled jobs:

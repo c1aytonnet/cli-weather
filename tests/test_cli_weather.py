@@ -5,6 +5,7 @@ import json
 import stat
 import tempfile
 import unittest
+from datetime import date, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -287,6 +288,8 @@ class WeatherTests(unittest.TestCase):
 
     @patch("cli_weather.weather._get_json")
     def test_fetch_open_meteo_weather_report_formats_forecast(self, get_json: MagicMock) -> None:
+        today = date.today()
+        tomorrow = today + timedelta(days=1)
         get_json.side_effect = [
             {
                 "places": [
@@ -307,7 +310,7 @@ class WeatherTests(unittest.TestCase):
                     "weather_code": 1,
                 },
                 "daily": {
-                    "time": ["2026-04-06", "2026-04-07"],
+                    "time": [today.isoformat(), tomorrow.isoformat()],
                     "weather_code": [2, 63],
                     "temperature_2m_max": [68.1, 70.2],
                     "temperature_2m_min": [51.4, 55.0],
@@ -322,8 +325,8 @@ class WeatherTests(unittest.TestCase):
         self.assertEqual(report["location"], "Chicago, IL 60601")
         self.assertEqual(report["sources"]["forecast"], "Open-Meteo")
         self.assertIn("Current: 62F, Mostly clear (feels like 60F)", rendered)
-        self.assertIn("Today (Mon Apr 6)", rendered)
-        self.assertIn("Tomorrow (Tue Apr 7)", rendered)
+        self.assertIn(f"Today ({today.strftime('%a %b')} {today.day})", rendered)
+        self.assertIn(f"Tomorrow ({tomorrow.strftime('%a %b')} {tomorrow.day})", rendered)
         self.assertIn("Moderate rain", rendered)
         self.assertTrue(
             rendered.rstrip().endswith(

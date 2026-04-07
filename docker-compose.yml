@@ -19,4 +19,3 @@ services:
       - ./cli-weather:/data
     entrypoint: ["/app/docker/scheduler-entrypoint.sh"]
     restart: unless-stopped
-    profiles: ["scheduler"]
