@@ -86,6 +86,18 @@ Step 3: edit your new files
 - `~/docker-media/cli-weather/.env`
 - `~/docker-media/cli-weather/secrets/cli_weather_smtp_password.txt`
 
+For the most common Docker setup using `metno` plus an SMTP password secret file, uncomment this line in `~/docker-media/cli-weather/.env`:
+
+```env
+CLI_WEATHER_SMTP_PASSWORD_FILE=/run/secrets/cli_weather_smtp_password
+```
+
+If you use `visualcrossing`, also uncomment this line:
+
+```env
+CLI_WEATHER_VISUALCROSSING_API_KEY_FILE=/run/secrets/cli_weather_visualcrossing_api_key
+```
+
 Step 4: start the services
 
 ```bash
@@ -208,6 +220,8 @@ That script:
 - sets the secret file permissions to `0600`
 - leaves existing files in place if you already customized them
 
+After running the script, you still need to edit `./cli-weather/.env` and uncomment the secret-file lines you are actually using.
+
 If you prefer to create the files manually, the equivalent commands are:
 
 ```bash
@@ -237,6 +251,28 @@ CLI_WEATHER_SMTP_STARTTLS=true
 CLI_WEATHER_SMTP_SSL=false
 CLI_WEATHER_CRON_SCHEDULE=0 7 * * *
 TZ=America/Chicago
+```
+
+Then enable the secret source that matches your setup:
+
+- `metno` or `open-meteo` with an SMTP password file:
+
+```env
+CLI_WEATHER_SMTP_PASSWORD_FILE=/run/secrets/cli_weather_smtp_password
+```
+
+- `visualcrossing` with an SMTP password file and API key file:
+
+```env
+CLI_WEATHER_SMTP_PASSWORD_FILE=/run/secrets/cli_weather_smtp_password
+CLI_WEATHER_VISUALCROSSING_API_KEY_FILE=/run/secrets/cli_weather_visualcrossing_api_key
+```
+
+- less secure fallback using plain env vars in `.env`:
+
+```env
+CLI_WEATHER_SMTP_PASSWORD=app-password
+CLI_WEATHER_VISUALCROSSING_API_KEY=your-visual-crossing-api-key
 ```
 
 In this model:
@@ -518,6 +554,13 @@ TZ=America/Chicago
 ```
 
 If you are using secret files, remove plain secret values such as `CLI_WEATHER_SMTP_PASSWORD` and `CLI_WEATHER_VISUALCROSSING_API_KEY` from `./cli-weather/.env`.
+
+Common `.env` choices:
+
+- default provider `metno` with secret-file SMTP password: uncomment `CLI_WEATHER_SMTP_PASSWORD_FILE`
+- `open-meteo` with secret-file SMTP password: uncomment `CLI_WEATHER_SMTP_PASSWORD_FILE`
+- `visualcrossing` with secret files: uncomment both `CLI_WEATHER_SMTP_PASSWORD_FILE` and `CLI_WEATHER_VISUALCROSSING_API_KEY_FILE`
+- plain env fallback: leave the `*_FILE` lines commented and set `CLI_WEATHER_SMTP_PASSWORD` and optionally `CLI_WEATHER_VISUALCROSSING_API_KEY`
 
 Safer secret-file example:
 
