@@ -67,7 +67,9 @@ chmod 0600 "$ENV_FILE"
 cat > "$RUNNER_SCRIPT" <<EOF
 #!/bin/sh
 set -eu
+set -a
 . "$ENV_FILE"
+set +a
 exec cli-weather email send >> "$LOG_FILE" 2>&1
 EOF
 chmod 0700 "$RUNNER_SCRIPT"
