@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0 - 2026-04-06
+## 0.7.0 - 2026-04-07
 
 - Added current weather and 7-day forecast CLI support for U.S. ZIP codes, U.S. city/state lookups, and international city/country lookups
 - Added provider support for MET Norway, Open-Meteo, and Visual Crossing

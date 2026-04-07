@@ -1,5 +1,5 @@
 Name:           cli-weather
-Version:        0.6.0
+Version:        0.7.0
 Release:        1%{?dist}
 Summary:        CLI weather reports and scheduled email delivery
 License:        MIT
@@ -32,5 +32,5 @@ install -m 0755 %{project_root}/packaging/bin/cli-weather %{buildroot}/usr/bin/c
 /usr/share/doc/cli-weather/LICENSE
 
 %changelog
-* Mon Apr 06 2026 Codex - 0.6.0-1
+* Tue Apr 07 2026 Codex - 0.7.0-1
 - Initial package release.
