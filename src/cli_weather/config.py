@@ -10,7 +10,7 @@ APP_DIR = Path(
     os.environ.get("CLI_WEATHER_CONFIG_DIR")
     or (Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "cli-weather")
 )
-CONFIG_PATH = Path(os.environ.get("CLI_WEATHER_CONFIG_PATH", APP_DIR / "config.json"))
+CONFIG_PATH = Path(os.environ.get("CLI_WEATHER_CONFIG_PATH") or (APP_DIR / "config.json"))
 SECRET_KEYS = {"smtp_password", "visualcrossing_api_key"}
 
 DEFAULT_CONFIG: Dict[str, Any] = {

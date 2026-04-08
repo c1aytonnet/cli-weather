@@ -14,6 +14,28 @@ from cli_weather import cli, config, emailer, scheduler, weather
 
 
 class ConfigTests(unittest.TestCase):
+    def test_empty_config_path_env_falls_back_to_config_dir(self) -> None:
+        import importlib
+        import os
+
+        original_dir = os.environ.get("CLI_WEATHER_CONFIG_DIR")
+        original_path = os.environ.get("CLI_WEATHER_CONFIG_PATH")
+        try:
+            os.environ["CLI_WEATHER_CONFIG_DIR"] = "/tmp/cli-weather-data"
+            os.environ["CLI_WEATHER_CONFIG_PATH"] = ""
+            reloaded = importlib.reload(config)
+            self.assertEqual(reloaded.CONFIG_PATH, Path("/tmp/cli-weather-data/config.json"))
+        finally:
+            if original_dir is None:
+                os.environ.pop("CLI_WEATHER_CONFIG_DIR", None)
+            else:
+                os.environ["CLI_WEATHER_CONFIG_DIR"] = original_dir
+            if original_path is None:
+                os.environ.pop("CLI_WEATHER_CONFIG_PATH", None)
+            else:
+                os.environ["CLI_WEATHER_CONFIG_PATH"] = original_path
+            importlib.reload(config)
+
     def test_config_path_honors_cli_weather_config_dir(self) -> None:
         import importlib
         import os
