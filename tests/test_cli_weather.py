@@ -307,6 +307,11 @@ class WeatherTests(unittest.TestCase):
         self.assertEqual(report["forecast"][1]["precipitation_probability"], 40)
         self.assertEqual(report["forecast"][0]["precipitation_amount_inches"], 0.01)
         self.assertEqual(report["sources"]["precipitation"], "MET Norway + Open-Meteo fallback")
+        metno_call = get_json.call_args_list[1]
+        self.assertEqual(
+            metno_call.kwargs["headers"]["User-Agent"],
+            weather.METNO_USER_AGENT,
+        )
 
     @patch("cli_weather.weather._get_json")
     def test_fetch_open_meteo_weather_report_formats_forecast(self, get_json: MagicMock) -> None:

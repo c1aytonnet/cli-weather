@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -9,11 +10,15 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
+from . import __version__
 
 ZIP_CODE_RE = re.compile(r"^\d{5}$")
 STATE_CODE_RE = re.compile(r"^[A-Za-z]{2}$")
 HTTP_TIMEOUT_SECONDS = 15
-METNO_USER_AGENT = "cli-weather/0.1.0 (https://example.com/contact)"
+METNO_USER_AGENT = os.environ.get(
+    "CLI_WEATHER_METNO_USER_AGENT",
+    f"cli-weather/{__version__} github.com/c1aytonnet/cli-weather",
+)
 
 STATE_NAMES = {
     "AL": "Alabama",
