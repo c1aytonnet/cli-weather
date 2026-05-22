@@ -12,3 +12,5 @@
 - Kept native host `crontab` scheduling as an alternative
 - Added Debian and RPM packaging assets and build scripts
 - Expanded repository documentation for installation, configuration, scheduling, provider selection, and package installation
+- Fixed Docker scheduler cron jobs so exported environment variables are available during scheduled sends
+- Fixed scheduled weather lookups against MET Norway by using an identifying User-Agent to avoid HTTP 403 responses
